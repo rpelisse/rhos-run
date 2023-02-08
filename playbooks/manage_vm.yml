@@ -47,3 +47,9 @@
 - name: "Print operation results."
   ansible.builtin.debug:
     var: instance
+
+- name: "Display VM adresses"
+  ansible.builtin.debug:
+    var: "{{ instance.server.addresses }}"
+  when:
+    - instance.server is defined and instance.server.addresses is defined
