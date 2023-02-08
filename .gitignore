@@ -1,0 +1,4 @@
+ansible.cfg
+inventory
+playbooks/clouds.yaml
+playbooks/vm_settings.yaml

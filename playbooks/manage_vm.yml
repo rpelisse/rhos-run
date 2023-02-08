@@ -1,0 +1,49 @@
+---
+- name:
+  ansible.builtin.assert:
+    that:
+      - ansible_nodename is defined
+      - ansible_nodename | length > 0
+      - openstack_password is defined
+    quiet: True
+
+- name: "Create instances on Openstack"
+  openstack.cloud.server:
+    state: "{{ state }}"
+    auth:
+      auth_url: "{{ clouds.openstack.auth.auth_url }}"
+      username: "{{ clouds.openstack.auth.username }}"
+      password: "{{ openstack_password }}"
+      project_id: "{{ clouds.openstack.auth.project_id }}"
+      user_domain_name: "{{ clouds.openstack.auth.user_domain_name }}"
+    region_name: "{{ clouds.openstack.region_name }}"
+    name: "{{ ansible_nodename }}"
+    availability_zone: "{{ availability_zone }}"
+    image: "{{ image }}"
+    boot_from_volume: "{{ boot_from_volume }}"
+    volume_size: "{{ volume_size }}"
+    flavor: "{{ flavor }}"
+    key_name: "{{ key_name }}"
+    terminate_volume: "{{ terminate_volumes }}"
+    network: "{{ network }}"
+    userdata: |
+      #cloud-config
+      debug: true
+      ssh_pwauth: true
+      disable_root: false
+      chpasswd:
+        list: |
+          root:{{ default_password }}
+          cloud-user:{{ default_password }}
+        expire: false
+  register: instance
+
+- name: "Validate that VM creation behaved properly."
+  ansible.builtin.assert:
+    that:
+      - instance is defined
+    quiet: true
+
+- name: "Print operation results."
+  ansible.builtin.debug:
+    var: instance
